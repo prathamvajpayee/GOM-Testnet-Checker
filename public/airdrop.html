@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GOM Wallet Eligibility Checker</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <style>
+        :root {
+            --primary: #1a5fb4;
+            --primary-dark: #0b3d91;
+            --secondary: #2ec27e;
+            --danger: #e01b24;
+            --dark: #1c1c1c;
+            --light: #f8f9fa;
+            --gray: #5e5c64;
+            --twitter-blue: #1da1f2;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --body-gradient: linear-gradient(135deg, #0f172a, #1e293b);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: var(--body-gradient);
+            color: var(--light);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 850px;
+            background: rgba(15, 23, 42, 0.8);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(100, 116, 139, 0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        header {
+            background: linear-gradient(90deg, var(--primary-dark) 0%, var(--primary) 100%);
+            padding: 30px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            margin-bottom: 8px;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            font-weight: 400;
+            color: rgba(255, 255, 255, 0.9);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .content {
+            padding: 25px;
+        }
+
+        .input-section {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(100, 116, 139, 0.3);
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #94a3b8;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        input[type="text"],
+        input[type="number"] {
+            width: 100%;
+            padding: 14px 18px;
+            border-radius: 12px;
+            border: 1px solid #334155;
+            background: rgba(15, 23, 42, 0.7);
+            color: var(--light);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(26, 95, 180, 0.2);
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(15, 23, 42, 0.5);
+            border-radius: 12px;
+            border: 1px solid #334155;
+        }
+
+        .checkbox-group input {
+            width: 22px;
+            height: 22px;
+            cursor: pointer;
+        }
+
+        .checkbox-group label {
+            margin: 0;
+            font-size: 1rem;
+            color: #cbd5e1;
+        }
+
+        .check-button {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(90deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            box-shadow: 0 5px 15px rgba(26, 95, 180, 0.3);
+        }
+
+        .check-button:disabled {
+            background: var(--gray);
+            cursor: not-allowed;
+            opacity: 0.7;
+            box-shadow: none;
+        }
+
+        .check-button:not(:disabled):hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(26, 95, 180, 0.4);
+        }
+
+        .screenshot-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .screenshot-card {
+            background: linear-gradient(135deg, #0d1b2a 0%, #1a2a4f 100%);
+            border-radius: 20px;
+            padding: 30px;
+            color: white;
+            width: 100%;
+            max-width: 600px;
+            display: none;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(64, 156, 255, 0.3);
+            margin-bottom: 20px;
+        }
+
+        .screenshot-header {
+            text-align: center;
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .screenshot-header h2 {
+            font-size: 1.6rem;
+            margin-bottom: 10px;
+            color: #e2e8f0;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .screenshot-header p {
+            color: #94a3b8;
+            font-size: 1rem;
+        }
+
+        .screenshot-results {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .screenshot-item {
+            background: rgba(30, 41, 59, 0.6);
+            padding: 18px;
+            border-radius: 15px;
+            text-align: center;
+            border: 1px solid rgba(100, 116, 139, 0.3);
+            transition: transform 0.3s ease;
+        }
+
+        .screenshot-item:hover {
+            transform: translateY(-5px);
+            border-color: rgba(64, 156, 255, 0.5);
+        }
+
+        .screenshot-item h3 {
+            font-size: 1rem;
+            margin-bottom: 12px;
+            color: #94a3b8;
+        }
+
+        .screenshot-item .value {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #e2e8f0;
+        }
+
+        .screenshot-status {
+            background: rgba(30, 41, 59, 0.7);
+            padding: 22px;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 25px;
+            border: 1px solid rgba(100, 116, 139, 0.3);
+        }
+
+        .screenshot-status h3 {
+            font-size: 1.1rem;
+            margin-bottom: 12px;
+            color: #94a3b8;
+        }
+
+        .screenshot-status .value {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: #38b2ac;
+        }
+
+        .screenshot-footer {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 25px;
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .disclaimer {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 25px;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            border: 1px solid rgba(100, 116, 139, 0.3);
+        }
+
+        .disclaimer h2 {
+            color: #38b2ac;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .disclaimer ul {
+            padding-left: 20px;
+            margin: 15px 0;
+        }
+
+        .disclaimer li {
+            margin-bottom: 10px;
+            color: #cbd5e1;
+        }
+
+        .disclaimer p {
+            margin-bottom: 12px;
+            color: #94a3b8;
+        }
+
+        .footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 25px;
+            background: rgba(15, 23, 42, 0.8);
+            border-top: 1px solid rgba(100, 116, 139, 0.3);
+        }
+
+        .credits {
+            font-size: 0.9rem;
+            color: #94a3b8;
+        }
+
+        .credits strong {
+            color: #e2e8f0;
+        }
+
+        .share-button {
+            background: var(--twitter-blue);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 50px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            box-shadow: 0 5px 15px rgba(29, 161, 242, 0.3);
+        }
+
+        .share-button:hover {
+            background: #1a91da;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(29, 161, 242, 0.4);
+        }
+
+        .formula {
+            background: rgba(30, 41, 59, 0.7);
+            padding: 18px;
+            border-radius: 15px;
+            margin: 25px 0;
+            font-family: monospace;
+            font-size: 1.1rem;
+            text-align: center;
+            border: 1px solid rgba(100, 116, 139, 0.3);
+            color: #cbd5e1;
+        }
+
+        .share-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .share-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(90deg, #8b5cf6, #3b82f6);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 5px 15px rgba(139, 92, 246, 0.3);
+        }
+
+        .share-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(139, 92, 246, 0.4);
+        }
+
+        .info-note {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 0.95rem;
+            color: #94a3b8;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .status-message {
+            text-align: center;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 12px;
+            display: none;
+        }
+
+        .status-success {
+            background: rgba(46, 194, 126, 0.2);
+            border: 1px solid rgba(46, 194, 126, 0.4);
+            color: #38b2ac;
+        }
+
+        .status-error {
+            background: rgba(224, 27, 36, 0.2);
+            border: 1px solid rgba(224, 27, 36, 0.4);
+            color: #e01b24;
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                padding: 20px;
+            }
+
+            header {
+                padding: 25px 20px;
+            }
+
+            h1 {
+                font-size: 1.8rem;
+            }
+
+            .subtitle {
+                font-size: 1rem;
+            }
+
+            .input-section, .disclaimer {
+                padding: 20px;
+            }
+
+            .screenshot-results {
+                grid-template-columns: 1fr;
+            }
+
+            .footer {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+
+            .screenshot-item .value {
+                font-size: 1.3rem;
+            }
+
+            .screenshot-status .value {
+                font-size: 1.6rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-wallet"></i> GOM Wallet Eligibility Checker</h1>
+            <p class="subtitle">Verify your eligibility for the MITO airdrop and calculate your allocation</p>
+        </header>
+
+        <div class="content">
+            <div class="input-section">
+                <div class="input-group">
+                    <label for="wallet-address"><i class="fas fa-address-card"></i> Wallet Address</label>
+                    <input type="text" id="wallet-address" name="wallet-address"
+                        placeholder="Enter your GOM wallet address">
+                </div>
+
+                <div class="input-group">
+                    <label for="allocation-input"><i class="fas fa-percentage"></i> Testnet Allocation
+                        Percentage</label>
+                    <input type="number" id="allocation-input" name="allocation-input"
+                        placeholder="Enter allocation percentage (e.g., 5)" min="0" max="100">
+                </div>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="sybil-check" name="sybil-check">
+                    <label for="sybil-check">Sybil Check (Confirm this is not a duplicate wallet)</label>
+                </div>
+
+                <button class="check-button" id="check-button" disabled>
+                    <i class="fas fa-search"></i> Check Eligibility
+                </button>
+                
+                <div class="status-message" id="status-message"></div>
+            </div>
+
+            <div class="formula">
+                Allocation = 70% × (Testnet MITO / 31,000,000) + 30% × (Other Assets / 1,940,000,000)
+            </div>
+
+            <div class="screenshot-container">
+                <div class="screenshot-card" id="screenshot-card">
+                    <div class="screenshot-header">
+                        <h2>GOM Wallet Eligibility Results</h2>
+                        <p>Generated on <span id="screenshot-date"></span></p>
+                    </div>
+
+                    <div class="screenshot-results">
+                        <div class="screenshot-item">
+                            <h3>Testnet MITO</h3>
+                            <div class="value" id="ss-testnet-mito">0.00</div>
+                        </div>
+
+                        <div class="screenshot-item">
+                            <h3>Other Assets</h3>
+                            <div class="value" id="ss-other-assets">$0.00</div>
+                            <small>Prices as of 22-12-2024</small>
+                        </div>
+
+                        <div class="screenshot-item">
+                            <h3>Testnet Allocation</h3>
+                            <div class="value" id="ss-allocation-percent">0%</div>
+                            <small>1 Billion Total Supply</small>
+                        </div>
+
+                        <div class="screenshot-item">
+                            <h3>Sybil Check</h3>
+                            <div class="value" id="ss-sybil">Verified</div>
+                        </div>
+                    </div>
+
+                    <div class="screenshot-status">
+                        <h3>MITO Airdrop Allocation</h3>
+                        <div class="value" id="ss-mito-allocation">0.00 MITO</div>
+                    </div>
+
+                    <div class="screenshot-footer">
+                        <div>Made by <strong>@svajpayee15</strong></div>
+                        <div>Thanks to <strong>@0xsacha</strong></div>
+                    </div>
+                </div>
+
+                <div class="share-container">
+                    <button class="share-btn" id="one-click-share">
+                        <i class="fab fa-twitter"></i> Share Results on X
+                    </button>
+                    <p class="info-note">Your results will be downloaded as an image and a tweet will open for sharing</p>
+                </div>
+            </div>
+
+            <div class="disclaimer">
+                <h2><i class="fas fa-exclamation-triangle"></i> Disclaimer</h2>
+                <p>This tool provides an estimate of your eligibility based on on-chain data and the specified formula.
+                    Results are not guaranteed and may be subject to change.</p>
+
+                <ul>
+                    <li>Eligibility is determined by the project's criteria and may be adjusted</li>
+                    <li>Testnet miAssets aren't included.</li>
+                    <li>Testnet $MITO Allocation = testnet $MITO + testnet $wMITO</li>
+                    <li>This tool does not constitute financial advice</li>
+                    <li>Always verify information through official project channels</li>
+                </ul>
+
+                <p>Made by <strong>@svajpayee15</strong> | Special thanks to <strong>@0xsacha</strong> for assistance
+                </p>
+            </div>
+        </div>
+
+        <div class="footer">
+            <div class="credits">
+                <p>GOM Wallet Eligibility Checker v2.0 | Made by <strong>@svajpayee15</strong> | Thanks to
+                    <strong>@0xsacha</strong></p>
+            </div>
+            <button class="share-button" id="docs-button">
+                <i class="fas fa-book"></i> Check Documentation
+            </button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // DOM Elements
+            const walletInput = document.getElementById('wallet-address');
+            const allocationInput = document.getElementById('allocation-input');
+            const sybilCheck = document.getElementById('sybil-check');
+            const checkButton = document.getElementById('check-button');
+            const screenshotCard = document.getElementById('screenshot-card');
+            const oneClickShare = document.getElementById('one-click-share');
+            const docsButton = document.getElementById('docs-button');
+            const statusMessage = document.getElementById('status-message');
+            
+            // State variables
+            let testnetAllocation = { majorAllocation: 0, minorAllocation: 0 };
+            let currentAllocation = 0;
+            let allocationPercent = 0;
+
+            // Set current date
+            const now = new Date();
+            document.getElementById('screenshot-date').textContent = 
+                `${now.toLocaleDateString()} ${now.toLocaleTimeString()}`;
+
+            // Update button state based on inputs
+            function updateButtonState() {
+                const walletFilled = walletInput.value.trim() !== '';
+                const allocationFilled = allocationInput.value.trim() !== '';
+                checkButton.disabled = !(walletFilled && allocationFilled && sybilCheck.checked);
+            }
+
+            // Event listeners
+            walletInput.addEventListener('input', updateButtonState);
+            allocationInput.addEventListener('input', updateButtonState);
+            sybilCheck.addEventListener('change', updateButtonState);
+            
+            // Show status message
+            function showStatus(message, isError = false) {
+                statusMessage.textContent = message;
+                statusMessage.className = isError ? 'status-message status-error' : 'status-message status-success';
+                statusMessage.style.display = 'block';
+                
+                // Hide after 5 seconds
+                setTimeout(() => {
+                    statusMessage.style.display = 'none';
+                }, 5000);
+            }
+
+            // Main check function
+            checkButton.addEventListener('click', async function() {
+                const walletAddress = walletInput.value.trim();
+                allocationPercent = parseFloat(allocationInput.value.trim());
+
+                if (!walletAddress || isNaN(allocationPercent)) {
+                    showStatus("Please fill in all required fields", true);
+                    return;
+                }
+
+                // Show loading state
+                checkButton.disabled = true;
+                checkButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking...';
+                showStatus("Fetching wallet data...");
+
+                try {
+                    // Fetch wallet data
+                    await fetchMitoBalance(walletAddress);
+                    await fetchOtherAssetsBalance(walletAddress);
+
+                    // Show the screenshot card
+                    screenshotCard.style.display = 'block';
+
+                    // Update screenshot card
+                    document.getElementById('ss-testnet-mito').textContent = `${testnetAllocation.majorAllocation} $MITO`;
+                    document.getElementById('ss-other-assets').textContent = `$${testnetAllocation.minorAllocation}`;
+                    document.getElementById('ss-allocation-percent').textContent = `${allocationPercent}%`;
+
+                    // Update Sybil status
+                    document.getElementById('ss-sybil').textContent = sybilCheck.checked ? 'Verified' : 'Not Verified';
+                    document.getElementById('ss-sybil').style.color = sybilCheck.checked ? '#38b2ac' : '#e01b24';
+
+                    // Calculate allocation
+                    const totalTestnetMito = 31000000;
+                    const totalOtherAssets = 1940000000;
+
+                    const mitoPart = 0.7 * (testnetAllocation.majorAllocation / totalTestnetMito) * (allocationPercent / 100 * 1000000000);
+                    const otherPart = 0.3 * (testnetAllocation.minorAllocation / totalOtherAssets) * (allocationPercent / 100 * 1000000000);
+
+                    currentAllocation = mitoPart + otherPart;
+
+                    document.getElementById('ss-mito-allocation').textContent = `${currentAllocation.toFixed(2)} MITO`;
+                    
+                    showStatus("Wallet data fetched successfully!");
+                } catch (error) {
+                    console.error('Error during wallet check:', error);
+                    showStatus("Error fetching wallet data. Please try again.", true);
+                } finally {
+                    // Reset button
+                    checkButton.innerHTML = '<i class="fas fa-search"></i> Check Eligibility';
+                    checkButton.disabled = false;
+                }
+            });
+
+            // One-click share on X
+            oneClickShare.addEventListener('click', function() {
+                if (!screenshotCard.style.display || screenshotCard.style.display === 'none') {
+                    showStatus("Please check eligibility first before sharing", true);
+                    return;
+                }
+
+                // Show loading state
+                oneClickShare.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Preparing...';
+                oneClickShare.disabled = true;
+
+                // Use html2canvas to create screenshot
+                html2canvas(screenshotCard).then(canvas => {
+                    // Convert canvas to data URL
+                    const dataURL = canvas.toDataURL('image/png');
+
+                    // Create a temporary link to download the image
+                    const link = document.createElement('a');
+                    link.download = 'gom-eligibility-results.png';
+                    link.href = dataURL;
+                    link.click();
+
+                    // Prepare text for Twitter
+                    const tweetText = `Just checked my GOM Wallet eligibility! ✅
+
+Testnet MITO: ${testnetAllocation.majorAllocation}
+Other Assets: $${testnetAllocation.minorAllocation}
+Testnet Allocation: ${allocationPercent}%
+MITO Allocation: ${currentAllocation.toFixed(2)} MITO
+
+Check yours now! Made by @svajpayee15 with help from @0xsacha #GOM #Airdrop`;
+
+                    // Open Twitter with the text
+                    const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}`;
+                    window.open(twitterUrl, '_blank');
+
+                    // Reset button
+                    oneClickShare.innerHTML = '<i class="fab fa-twitter"></i> Share Results on X';
+                    oneClickShare.disabled = false;
+                });
+            });
+
+            // Documentation button
+            docsButton.addEventListener('click', function() {
+                alert("Redirecting to official documentation...");
+                // In a real implementation, this would open the documentation URL
+                // window.open("https://docs.gomproject.io", "_blank");
+            });
+
+            // API Functions
+            async function fetchMitoBalance(walletAddress) {
+                try {
+                    const rawMitoBalance = await fetch(`https://api.routescan.io/v2/network/testnet/evm/124832/etherscan/api?module=account&action=balance&address=${walletAddress}&tag=latest&apikey=YourApiKeyToken`);
+                    const mitoBalance = await rawMitoBalance.json();
+
+                    const rawWrappedMitoBalance = await fetch(`https://api.routescan.io/v2/network/testnet/evm/124832/etherscan/api?module=account&action=tokenbalance&contractaddress=0x8B71fD76b23721d0D73CA14Ea6464AAD70149B67&address=${walletAddress}&tag=latest&apikey=YourApiKeyToken`);
+                    const wrappedMitoBalance = await rawWrappedMitoBalance.json();
+
+                    if (mitoBalance.status === '1' && wrappedMitoBalance.status === '1') {
+                        const balanceInWei = BigInt(mitoBalance.result) + BigInt(wrappedMitoBalance.result);
+                        const balanceInMito = Number(balanceInWei) / 1e18;
+                        testnetAllocation.majorAllocation = balanceInMito.toFixed(2);
+                    } else {
+                        console.error('Failed to fetch balance:', mitoBalance.message || wrappedMitoBalance.message);
+                        throw new Error('Failed to fetch MITO balance');
+                    }
+                } catch (error) {
+                    console.error('Error fetching MITO balance:', error);
+                    throw error;
+                }
+            }
+
+            async function fetchOtherAssetsBalance(walletAddress) {
+                try {
+                    const rawOtherAssetsBalance = await fetch(`https://api.routescan.io/v2/network/testnet/evm/124832/address/${walletAddress}/erc20-holdings`);
+                    const otherAssetsBalanceArray = await rawOtherAssetsBalance.json();
+
+                    if (otherAssetsBalanceArray.items) {
+                        await fetchPriceOtherAssetsBalance(otherAssetsBalanceArray.items);
+                    } else {
+                        console.error('Failed to fetch balance:', otherAssetsBalanceArray.message);
+                        throw new Error('Failed to fetch other assets balance');
+                    }
+                } catch (error) {
+                    console.error('Error fetching other assets:', error);
+                    throw error;
+                }
+            }
+
+            async function fetchPriceOtherAssetsBalance(otherAssetsBalanceArray) {
+                try {
+                    let otherAssetsSymbol = "";
+                    let otherAssetsBalanceInUsd = 0;
+
+                    otherAssetsBalanceArray.forEach(tokens => {
+                        otherAssetsSymbol += `,${tokens.tokenSymbol}`;
+                    });
+
+                    otherAssetsSymbol = otherAssetsSymbol.slice(1);
+
+                    // In production, replace with actual endpoint
+                    const responseOtherAssetsBalanceInUsdArray = await fetch(`http://localhost:4000/fetchOtherAssetsBalanceInUsd?symbols=${otherAssetsSymbol}`);
+                    const OtherAssetsBalanceInUsdArray = await responseOtherAssetsBalanceInUsdArray.json();
+
+                    otherAssetsBalanceArray.forEach(tokens => {
+                        if (Number(BigInt(tokens.tokenQuantity)) / 1e18 > 0.0000001 && 
+                            OtherAssetsBalanceInUsdArray[(tokens.tokenSymbol).toLowerCase()]) {
+                            otherAssetsBalanceInUsd += Number(Number(OtherAssetsBalanceInUsdArray[(tokens.tokenSymbol).toLowerCase()]) * Number(BigInt(tokens.tokenQuantity)) / 1e18);
+                        }
+                    });
+
+                    testnetAllocation.minorAllocation = otherAssetsBalanceInUsd.toFixed(2);
+                } catch (error) {
+                    console.error("Error fetching other assets data:", error);
+                    throw error;
+                }
+            }
+        });
+    </script>
+</body>
+</html>
