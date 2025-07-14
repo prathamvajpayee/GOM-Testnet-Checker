@@ -33,7 +33,7 @@ app.get("/fetchOtherAssetsBalanceInUsd", async (req, res) => {
 });
 
 app.get('/',(req,res)=>{
-    res.sendFile(path.join(__dirname, 'public', 'airdrop.html'));
+res.sendFile(path.join(__dirname, '..', 'public', 'airdrop.html'));
 })
 
 app.get("/fetchHistoricalPrice", async (req, res) => {
