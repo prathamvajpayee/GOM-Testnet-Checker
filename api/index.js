@@ -32,7 +32,7 @@ app.get("/fetchOtherAssetsBalanceInUsd", async (req, res) => {
   }
 });
 
-res.send('/',(req,res)=>{
+app.get('/',(req,res)=>{
     res.sendFile(path.join(__dirname, 'public', 'airdrop.html'));
 })
 
