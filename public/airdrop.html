@@ -561,11 +561,11 @@
                     Results are not guaranteed and may be subject to change.</p>
 
                 <ul>
-                    <li>Eligibility is determined by the project's criteria and may be adjusted</li>
-                    <li>Testnet miAssets aren't included.</li>
-                    <li>Testnet $MITO Allocation = testnet $MITO + testnet $wMITO</li>
-                    <li>This tool does not constitute financial advice</li>
-                    <li>Always verify information through official project channels</li>
+                    <li>Eligibility is determined by the project's criteria and may be adjusted.</li>
+                    <li>Testnet $MITO Allocation = testnet $MITO + testnet $wMITO.</li>
+                    <li>This tool does not constitute financial advice.</li>
+                    <li>Always verify information through official project channels.</li>
+                    <li>The value of other assets are determined by the real time prices. (Will be fixed as soon as possible)</li>
                 </ul>
 
                 <p>Made by <strong>@svajpayee15</strong> | Special thanks to <strong>@0xsacha</strong> for assistance
@@ -597,7 +597,7 @@
             const statusMessage = document.getElementById('status-message');
             
             // State variables
-            let testnetAllocation = { majorAllocation: 0, minorAllocation: 0 };
+            let testnetAllocation = { majorAllocation: 0, minorAllocation: 0, otherAssets: []};
             let currentAllocation = 0;
             let allocationPercent = 0;
 
@@ -648,7 +648,7 @@
                 try {
                     // Fetch wallet data
                     await fetchMitoBalance(walletAddress);
-                    await fetchOtherAssetsBalance(walletAddress);
+                    await fetchOtherAssetsBalance(`https://api.routescan.io/v2/network/testnet/evm/124832/address/${walletAddress}/erc20-holdings`);
 
                     // Show the screenshot card
                     screenshotCard.style.display = 'block';
@@ -756,14 +756,21 @@ Check yours now! Made by @svajpayee15 with help from @0xsacha #GOM #Airdrop`;
                 }
             }
 
-            async function fetchOtherAssetsBalance(walletAddress) {
+            async function fetchOtherAssetsBalance(url) {
                 try {
-                    const rawOtherAssetsBalance = await fetch(`https://api.routescan.io/v2/network/testnet/evm/124832/address/${walletAddress}/erc20-holdings`);
+                    const rawOtherAssetsBalance = await fetch(url);
                     const otherAssetsBalanceArray = await rawOtherAssetsBalance.json();
 
-                    if (otherAssetsBalanceArray.items) {
-                        await fetchPriceOtherAssetsBalance(otherAssetsBalanceArray.items);
-                    } else {
+                    if (otherAssetsBalanceArray.link.next) {
+                        testnetAllocation.otherAssets = [...testnetAllocation.otherAssets,...otherAssetsBalanceArray.items]
+                        await fetchOtherAssetsBalance(`https://api.routescan.io${otherAssetsBalanceArray.link.next}`);
+
+                    } 
+                    else if(otherAssetsBalanceArray.items){
+                        testnetAllocation.otherAssets = [...testnetAllocation.otherAssets,...otherAssetsBalanceArray.items]
+                        await fetchPriceOtherAssetsBalance(testnetAllocation.otherAssets);
+                    }
+                    else {
                         console.error('Failed to fetch balance:', otherAssetsBalanceArray.message);
                         throw new Error('Failed to fetch other assets balance');
                     }
@@ -777,25 +784,32 @@ Check yours now! Made by @svajpayee15 with help from @0xsacha #GOM #Airdrop`;
                 try {
                     let otherAssetsSymbol = "";
                     let otherAssetsBalanceInUsd = 0;
+                    const patterns = ["variableDebtTest", "mi", "aTest", "variableDebtTestmi"];
 
                     otherAssetsBalanceArray.forEach(tokens => {
+                        let matchedPrefix = patterns.find(prefix => tokens.tokenSymbol.startsWith(prefix));
+
+                        if (matchedPrefix) {
+                            tokens.tokenSymbol = tokens.tokenSymbol.slice(matchedPrefix.length);
+                        }
                         otherAssetsSymbol += `,${tokens.tokenSymbol}`;
                     });
 
                     otherAssetsSymbol = otherAssetsSymbol.slice(1);
 
                     // In production, replace with actual endpoint
-                    const responseOtherAssetsBalanceInUsdArray = await fetch(`https://gom-testnet-checker.vercel.app/fetchOtherAssetsBalanceInUsd?symbols=${otherAssetsSymbol}`);
+                    const responseOtherAssetsBalanceInUsdArray = await fetch(`http://localhost:4000/fetchOtherAssetsBalanceInUsd?symbols=${otherAssetsSymbol}`);
                     const OtherAssetsBalanceInUsdArray = await responseOtherAssetsBalanceInUsdArray.json();
 
                     otherAssetsBalanceArray.forEach(tokens => {
-                        if (Number(BigInt(tokens.tokenQuantity)) / 1e18 > 0.0000001 && 
+                        if (Number(BigInt(tokens.tokenQuantity)) / 1e18 > 0 && 
                             OtherAssetsBalanceInUsdArray[(tokens.tokenSymbol).toLowerCase()]) {
                             otherAssetsBalanceInUsd += Number(Number(OtherAssetsBalanceInUsdArray[(tokens.tokenSymbol).toLowerCase()]) * Number(BigInt(tokens.tokenQuantity)) / 1e18);
                         }
                     });
 
                     testnetAllocation.minorAllocation = otherAssetsBalanceInUsd.toFixed(2);
+
                 } catch (error) {
                     console.error("Error fetching other assets data:", error);
                     throw error;
