@@ -813,7 +813,7 @@ Check yours now! Made by @svajpayee15 with help from @0xsacha #GOM #Airdrop`;
 
     const symbols = Object.keys(balanceMap).join(',');
     console.log("Fetching prices for:", symbols);
-    const resp = await fetch(`http://localhost:4000/fetchOtherAssetsBalanceInUsd?symbols=${symbols}`);
+    const resp = await fetch(`https://gom-testnet-checker.vercel.app/fetchOtherAssetsBalanceInUsd?symbols=${symbols}`);
     const priceData = await resp.json();
     console.log("Price data:", priceData);
 
