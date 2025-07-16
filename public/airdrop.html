@@ -491,7 +491,7 @@
 
                 <div class="checkbox-group">
                     <input type="checkbox" id="sybil-check" name="sybil-check">
-                    <label for="sybil-check">Sybil Check</label>
+                    <label for="sybil-check">Sybil Check (Confirm this is not a duplicate wallet)</label>
                 </div>
 
                 <button class="check-button" id="check-button" disabled>
@@ -764,7 +764,6 @@ Check yours now! Made by @svajpayee15 with help from @0xsacha #GOM #Airdrop`;
                     if (otherAssetsBalanceArray.link.next) {
                         testnetAllocation.otherAssets = [...testnetAllocation.otherAssets,...otherAssetsBalanceArray.items]
                         await fetchOtherAssetsBalance(`https://api.routescan.io${otherAssetsBalanceArray.link.next}`);
-
                     } 
                     else if(otherAssetsBalanceArray.items){
                         testnetAllocation.otherAssets = [...testnetAllocation.otherAssets,...otherAssetsBalanceArray.items]
@@ -780,41 +779,69 @@ Check yours now! Made by @svajpayee15 with help from @0xsacha #GOM #Airdrop`;
                 }
             }
 
-            async function fetchPriceOtherAssetsBalance(otherAssetsBalanceArray) {
-                try {
-                    let otherAssetsSymbol = "";
-                    let otherAssetsBalanceInUsd = 0;
-                    const patterns = ["variableDebtTest", "mi", "aTest", "variableDebtTestmi"];
+         async function fetchPriceOtherAssetsBalance(otherAssetsBalanceArray) {
+  try {
+    let balanceMap = {};
+    const patterns = ["variableDebtTest", "aTest", "mi"];
 
-                    otherAssetsBalanceArray.forEach(tokens => {
-                        let matchedPrefix = patterns.find(prefix => tokens.tokenSymbol.startsWith(prefix));
+    otherAssetsBalanceArray.forEach(token => {
+      let symbol = token.tokenSymbol;
+      let category = 'vanilla';
 
-                        if (matchedPrefix) {
-                            tokens.tokenSymbol = tokens.tokenSymbol.slice(matchedPrefix.length);
-                        }
-                        otherAssetsSymbol += `,${tokens.tokenSymbol}`;
-                    });
 
-                    otherAssetsSymbol = otherAssetsSymbol.slice(1);
+      for (let prefix of patterns) {
+       if (symbol.startsWith(prefix) ) {
+          symbol = symbol.slice(prefix.length);
+          if(symbol.startsWith("mi")){
+            symbol = symbol.slice(2);
+          }
+          if (prefix === "variableDebtTest") category = "variableDebtTest";
+          else if (prefix === "aTest") category = "aTest";
+          break;
+        }
+      }
 
-                    // In production, replace with actual endpoint
-                    const responseOtherAssetsBalanceInUsdArray = await fetch(`http://localhost:4000/fetchOtherAssetsBalanceInUsd?symbols=${otherAssetsSymbol}`);
-                    const OtherAssetsBalanceInUsdArray = await responseOtherAssetsBalanceInUsdArray.json();
+      if (!balanceMap[symbol]) {
+        balanceMap[symbol] = { vanilla: 0, aTest: 0, variableDebtTest: 0 };
+      }
 
-                    otherAssetsBalanceArray.forEach(tokens => {
-                        if (Number(BigInt(tokens.tokenQuantity)) / 1e18 > 0 && 
-                            OtherAssetsBalanceInUsdArray[(tokens.tokenSymbol).toLowerCase()]) {
-                            otherAssetsBalanceInUsd += Number(Number(OtherAssetsBalanceInUsdArray[(tokens.tokenSymbol).toLowerCase()]) * Number(BigInt(tokens.tokenQuantity)) / 1e18);
-                        }
-                    });
+      const amount = Number(BigInt(token.tokenQuantity)) / 1e18;
+      balanceMap[symbol][category] += amount;
+    });
 
-                    testnetAllocation.minorAllocation = otherAssetsBalanceInUsd.toFixed(2);
+    console.log("Breakdown after prefix logic:", balanceMap);
 
-                } catch (error) {
-                    console.error("Error fetching other assets data:", error);
-                    throw error;
-                }
-            }
+    const symbols = Object.keys(balanceMap).join(',');
+    console.log("Fetching prices for:", symbols);
+    const resp = await fetch(`http://localhost:4000/fetchOtherAssetsBalanceInUsd?symbols=${symbols}`);
+    const priceData = await resp.json();
+    console.log("Price data:", priceData);
+
+    // Calculate net and USD total
+    let otherAssetsBalanceInUsd = 0;
+
+    for (let sym of Object.keys(balanceMap)) {
+      const { vanilla, aTest, variableDebtTest } = balanceMap[sym];
+      let net = vanilla + aTest - variableDebtTest;
+
+      const price = priceData[sym.toLowerCase()] || 0;
+      const usd = net * price;
+      console.log(`— ${sym}: vanilla=${vanilla}, aTest=${aTest}, debt=${variableDebtTest}, net=${net}, price=${price} -> USD=${usd.toFixed(2)}`);
+
+      otherAssetsBalanceInUsd += usd;
+    }
+
+    console.log("Total other assets (USD):", otherAssetsBalanceInUsd.toFixed(2));
+    testnetAllocation.minorAllocation = otherAssetsBalanceInUsd.toFixed(2);
+  }
+  catch (err) {
+    console.error("Error in fetchPriceOtherAssetsBalance:", err);
+    throw err;
+  }
+}
+
+
+
         });
     </script>
 </body>
