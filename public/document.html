@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GOM Testnet Stats Documentation</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #1a5fb4;
+            --primary-dark: #0b3d91;
+            --secondary: #2ec27e;
+            --danger: #e01b24;
+            --dark: #1c1c1c;
+            --light: #f8f9fa;
+            --gray: #5e5c64;
+            --twitter-blue: #1da1f2;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --body-gradient: linear-gradient(135deg, #0f172a, #1e293b);
+            --accent: #38b2ac;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: var(--body-gradient);
+            color: var(--light);
+            min-height: 100vh;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background: linear-gradient(90deg, var(--primary-dark) 0%, var(--primary) 100%);
+            padding: 30px 20px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        header::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 50%);
+            pointer-events: none;
+        }
+
+        .header-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .title-main {
+            color: white;
+            font-weight: 700;
+        }
+
+        .title-sub {
+            display: block;
+            font-size: 1.2rem;
+            color: rgba(255,255,255,0.9);
+            font-weight: 400;
+            margin-top: 8px;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            font-weight: 400;
+            color: rgba(255, 255, 255, 0.9);
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .back-button {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+            padding: 8px 15px;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.9);
+            transition: all 0.3s ease;
+        }
+
+        .back-button:hover {
+            background: white;
+            transform: translateY(-2px);
+        }
+
+        .docs-container {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        .mobile-nav-toggle {
+            display: none;
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 12px 15px;
+            border-radius: 8px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            cursor: pointer;
+            width: 100%;
+            text-align: left;
+        }
+
+        .mobile-nav-toggle i {
+            margin-right: 10px;
+        }
+
+        .docs-nav {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border: 1px solid rgba(100, 116, 139, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .docs-nav h3 {
+            margin-bottom: 15px;
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .docs-nav ul {
+            list-style: none;
+        }
+
+        .docs-nav li {
+            margin-bottom: 10px;
+        }
+
+        .docs-nav a {
+            color: #cbd5e1;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            display: block;
+            padding: 8px 10px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .docs-nav a:hover {
+            color: white;
+            background: rgba(56, 178, 172, 0.2);
+        }
+
+        .docs-nav a.active {
+            color: white;
+            background: rgba(56, 178, 172, 0.3);
+            font-weight: 600;
+        }
+
+        .docs-content {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border: 1px solid rgba(100, 116, 139, 0.3);
+        }
+
+        .docs-section {
+            margin-bottom: 40px;
+            scroll-margin-top: 20px;
+        }
+
+        .docs-section h2 {
+            color: var(--accent);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(100, 116, 139, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .docs-section h3 {
+            color: #94a3b8;
+            margin: 25px 0 15px;
+        }
+
+        .feature-card {
+            background: rgba(15, 23, 42, 0.5);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(100, 116, 139, 0.3);
+            transition: transform 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+        }
+
+        .feature-card h4 {
+            color: #e2e8f0;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .code-block {
+            background: rgba(15, 23, 42, 0.8);
+            border-radius: 8px;
+            padding: 15px;
+            font-family: monospace;
+            color: #cbd5e1;
+            margin: 15px 0;
+            overflow-x: auto;
+            border: 1px solid rgba(100, 116, 139, 0.3);
+            line-height: 1.5;
+        }
+
+        .note {
+            background: rgba(56, 178, 172, 0.1);
+            border-left: 4px solid var(--accent);
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .warning {
+            background: rgba(224, 27, 36, 0.1);
+            border-left: 4px solid var(--danger);
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        ul.feature-list {
+            list-style-type: none;
+        }
+
+        ul.feature-list li {
+            margin-bottom: 10px;
+            padding-left: 25px;
+            position: relative;
+        }
+
+        ul.feature-list li:before {
+            content: '✓';
+            color: var(--accent);
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: rgba(15, 23, 42, 0.5);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        table th {
+            background: rgba(56, 178, 172, 0.3);
+            color: white;
+            padding: 12px;
+            text-align: left;
+        }
+
+        table td {
+            padding: 12px;
+            border-bottom: 1px solid rgba(100, 116, 139, 0.3);
+            color: #cbd5e1;
+        }
+
+        table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .credits {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(100, 116, 139, 0.3);
+        }
+
+        .credits a {
+            color: #3b82f6;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .credits a:hover {
+            color: #8b5cf6;
+            text-decoration: underline;
+        }
+
+        /* Animation for section highlighting */
+        @keyframes highlight {
+            0% { background-color: rgba(56, 178, 172, 0); }
+            50% { background-color: rgba(56, 178, 172, 0.2); }
+            100% { background-color: rgba(56, 178, 172, 0); }
+        }
+
+        .highlight {
+            animation: highlight 2s ease;
+        }
+        
+        .disclaimer {
+            background: rgba(30,41,59,0.8);
+            border-radius: 12px;
+            padding: 25px;
+            border-left: 4px solid var(--danger);
+        }
+
+        .disclaimer h3 {
+            color: var(--danger);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .disclaimer-list {
+            margin: 20px 0;
+            list-style: none;
+        }
+
+        .disclaimer-list li {
+            margin-bottom: 12px;
+            padding-left: 30px;
+            position: relative;
+        }
+
+        .disclaimer-list i {
+            position: absolute;
+            left: 0;
+            color: #3b82f6;
+        }
+
+        .disclaimer-note {
+            font-size: 0.9em;
+            color: #94a3b8;
+            border-top: 1px solid rgba(100,116,139,0.3);
+            padding-top: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Responsive Styles */
+        @media (min-width: 992px) {
+            .docs-container {
+                flex-direction: row;
+            }
+            
+            .docs-nav {
+                flex: 0 0 280px;
+                height: fit-content;
+                position: sticky;
+                top: 20px;
+            }
+        }
+
+        @media (max-width: 991px) {
+            .docs-nav {
+                max-height: 0;
+                overflow: hidden;
+                padding: 0;
+                opacity: 0;
+                transform: translateY(-10px);
+                transition: all 0.4s ease;
+            }
+            
+            .docs-nav.active {
+                max-height: 1000px;
+                padding: 20px;
+                opacity: 1;
+                transform: translateY(0);
+            }
+            
+            .mobile-nav-toggle {
+                display: flex;
+                align-items: center;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .title-main {
+                font-size: 2rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header-content {
+                padding: 15px;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            .title-main {
+                font-size: 1.8rem;
+            }
+            
+            .subtitle {
+                font-size: 1rem;
+            }
+            
+            .docs-content {
+                padding: 20px;
+            }
+            
+            .feature-card {
+                padding: 15px;
+            }
+            
+            .code-block {
+                padding: 12px;
+                font-size: 0.9rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 15px;
+            }
+            
+            h1 {
+                font-size: 1.6rem;
+                flex-direction: column;
+                gap: 5px;
+            }
+            
+            .title-main {
+                font-size: 1.6rem;
+            }
+            
+            .title-sub {
+                font-size: 1rem;
+            }
+            
+            .docs-section h2 {
+                font-size: 1.4rem;
+            }
+            
+            .feature-card h4 {
+                font-size: 1.1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <h1>
+                <i class="fas fa-chart-network"></i>
+                <span class="title-main">GOM Testnet Stats Documentation</span>
+                <!-- <span class="title-sub">Comprehensive Analysis of Your Testnet Activity</span> -->
+            </h1>
+            <p class="subtitle">Detailed methodology for calculating your Game of Mito testnet statistics and potential allocations</p>
+        </div>
+    </header>
+
+    <div class="container">
+        <a href="index.html" class="back-button"><i class="fas fa-arrow-left"></i> Back to Stats Viewer</a>
+
+        <div class="docs-container">
+            <button class="mobile-nav-toggle" id="mobileToggle">
+                <i class="fas fa-bars"></i> Documentation Menu
+            </button>
+            
+            <nav class="docs-nav" id="docsNav">
+                <h3><i class="fas fa-book"></i> Documentation</h3>
+                <ul>
+                    <li><a href="#overview" class="active"><i class="fas fa-home"></i> Overview</a></li>
+                    <li><a href="#features"><i class="fas fa-star"></i> Features</a></li>
+                    <li><a href="#how-it-works"><i class="fas fa-cogs"></i> Methodology</a></li>
+                    <li><a href="#usage"><i class="fas fa-user"></i> Usage Guide</a></li>
+                    <li><a href="#api"><i class="fas fa-code"></i> API Reference</a></li>
+                    <li><a href="#limitations"><i class="fas fa-exclamation-triangle"></i> Limitations</a></li>
+                    <li><a href="#disclaimer"><i class="fas fa-shield-alt"></i> Disclaimer</a></li>
+                </ul>
+            </nav>
+
+            <main class="docs-content">
+                <section id="overview" class="docs-section">
+                    <h2><i class="fas fa-home"></i> Overview</h2>
+                    <p>The GOM (Game of Mito) Testnet Stats Viewer is a comprehensive analytical tool that enables users to examine their testnet statistics and explore potential allocation scenarios based on their on-chain activity within the Mitosis testnet environment.</p>
+                    
+                    <div class="feature-card">
+                        <h4><i class="fas fa-lightbulb"></i> Core Purpose</h4>
+                        <p>This application assists participants in visualizing their on-chain interactions and understanding how various allocation parameters might influence potential reward distributions.</p>
+                    </div>
+
+                    <div class="note">
+                        <p><strong>Note:</strong> This is an independent, community-developed analytical tool not affiliated with the official Mitosis team. All computations represent estimates intended for educational purposes.</p>
+                    </div>
+                </section>
+
+                <section id="features" class="docs-section">
+                    <h2><i class="fas fa-star"></i> Key Features</h2>
+                    
+                    <div class="feature-card">
+                        <h4><i class="fas fa-wallet"></i> Comprehensive Wallet Analysis</h4>
+                        <ul class="feature-list">
+                            <li>Examines MITO and wMITO balances on testnet</li>
+                            <li>Analyzes diverse asset holdings within the wallet</li>
+                            <li>Presents detailed testnet engagement metrics</li>
+                        </ul>
+                    </div>
+
+                    <div class="feature-card">
+                        <h4><i class="fas fa-calculator"></i> Scenario Simulation</h4>
+                        <ul class="feature-list">
+                            <li>Enables testing of various allocation parameters</li>
+                            <li>Visualizes potential outcomes through interactive models</li>
+                            <li>Based on established testnet reward distribution formulas</li>
+                        </ul>
+                        <div class="code-block">
+                            Allocation = 70% × (Testnet MITO / Total MITO Supply) + 
+                                      30% × (Other Assets / Total Other Assets Supply)
+                        </div>
+                    </div>
+
+                    <div class="feature-card">
+                        <h4><i class="fas fa-trophy"></i> Advanced Analytics</h4>
+                        <ul class="feature-list">
+                            <li>Calculates asset valuations based on snapshot date pricing</li>
+                            <li>Implements precise asset reconciliation methodology</li>
+                            <li>Generates professional results visualization</li>
+                            <li>One-click sharing functionality to Twitter (X)</li>
+                            <li>Downloadable result images for documentation</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <section id="how-it-works" class="docs-section">
+                    <h2><i class="fas fa-cogs"></i> Technical Methodology</h2>
+                    <h3>Architectural Overview</h3>
+                    
+                    <div class="feature-card">
+                        <h4><i class="fas fa-desktop"></i> Frontend Implementation</h4>
+                        <ul class="feature-list">
+                            <li>Built with HTML5, CSS3, and JavaScript</li>
+                            <li>Fully responsive design across all device types</li>
+                            <li>Utilizes html2canvas for image generation</li>
+                        </ul>
+                    </div>
+
+                    <div class="feature-card">
+                        <h4><i class="fas fa-database"></i> Data Integration</h4>
+                        <ul class="feature-list">
+                            <li>Leverages Routescan API for wallet balance retrieval</li>
+                            <li>Incorporates historical asset pricing (as of 22-12-2024)</li>
+                            <li>Implements local computational models for scenario analysis</li>
+                        </ul>
+                    </div>
+
+                    <h3>Asset Reconciliation Methodology</h3>
+                    <p>The application calculates net asset values using this established formula:</p>
+                    
+                    <div class="code-block">
+                        net_assets = Σ(vanilla + aTest + mi - variableDebtTest)<sub>token</sub>
+                    </div>
+                    
+                    <p>Where:</p>
+                    <ul class="feature-list">
+                        <li><strong>vanilla tokens</strong>: Standard token balances without protocol-specific prefixes</li>
+                        <li><strong>aTest tokens</strong>: Assets supplied to testnet protocols (prefixed with "aTest")</li>
+                        <li><strong>mi tokens</strong>: Mirrored assets (prefixed with "mi") representing EOL deposits</li>
+                        <li><strong>variableDebtTest tokens</strong>: Borrowed assets within testnet protocols</li>
+                    </ul>
+
+                    <div class="feature-card">
+                        <h4><i class="fas fa-calculator"></i> Computational Example</h4>
+                        <p>For Ethereum (ETH), the calculation process is:</p>
+                        <div class="code-block">
+                            net_ETH = (ETH + aTestETH + miETH) - variableDebtTestETH
+                        </div>
+                        <p>This methodology is consistently applied across all supported assets.</p>
+                    </div>
+
+                    <h3>Allocation Calculation Model</h3>
+                    <p>The allocation estimation employs this comprehensive formula:</p>
+                    <div class="code-block">
+                        Mainnet_MITO_Allocation = <br>(allocationPercent ÷ 100 × Total_Supply) × 
+                        [ 0.7 × (Testnet_MITO ÷ Total_MITO_Supply) + 
+                          0.3 × (Net_Other_Assets ÷ Total_Other_Assets_Supply) ]
+                    </div>
+                     <p>Parameters:</p>
+                   <ul class="feature-list">
+    <li><strong>Allocation Percentage</strong>: User-defined testnet allocation parameter (default: 3.5%)</li>
+    <li><strong>Total MITO Supply</strong>: Circulating supply of mainnet MITO tokens (default: 1,000,000,000)</li>
+    <li><strong>Testnet MITO Balance</strong>: Combined testnet MITO and wMITO holdings</li>
+    <li><strong>Testnet MITO Supply</strong>: Total testnet MITO distribution (default: 31,000,000) as referenced from <a href="https://x.com/murinxda">@MurinXda</a></li>
+    <li><strong>Net Other Assets Value</strong>: USD valuation of testnet ERC-20 holdings (prices as of December 22, 2024)</li>
+    <li><strong>Total Other Assets Supply</strong>: USD valuation benchmark for all testnet ERC-20 assets (prices as of December 22, 2024)</li>
+</ul>
+                </section>
+                
+                <section id="usage" class="docs-section">
+                    <h2><i class="fas fa-user"></i> Usage Guide</h2>
+                    
+                    <h3>Basic Operation</h3>
+                    <ol style="margin-left: 20px; margin-bottom: 20px;">
+                        <li>Input your wallet address (0x... format)</li>
+                        <li>Specify the testnet allocation percentage (default: 3.5%)</li>
+                        <li>Select "View Testnet Stats" to initiate analysis</li>
+                        <li>Review comprehensive results dashboard</li>
+                        <li>Optionally share or download results</li>
+                    </ol>
+
+                    <div class="feature-card">
+                        <h4><i class="fas fa-sliders-h"></i> Advanced Configuration</h4>
+                        <ul class="feature-list">
+                            <li><strong>Allocation Percentage:</strong> Adjust based on official testnet allocation parameters</li>
+                            <li><strong>Sybil Detection:</strong> Future implementation for wallet cluster analysis</li>
+                        </ul>
+                    </div>
+
+                    <div class="warning">
+                        <p><strong>Important Notice:</strong> Always validate results through official channels before making financial decisions. This tool provides estimates only.</p>
+                    </div>
+                </section>
+
+                <section id="api" class="docs-section">
+                    <h2><i class="fas fa-code"></i> API Reference</h2>
+                    <p>The application integrates with the following Routescan API endpoints:</p>
+                    
+                    <div class="code-block">
+                        <strong>MITO Balance:</strong><br>
+                        GET https://api.routescan.io/v2/network/testnet/evm/124832/etherscan/api?module=account&action=balance&address={walletAddress}&tag=latest
+                    </div>
+
+                    <div class="code-block">
+                        <strong>wMITO Balance:</strong><br>
+                        GET https://api.routescan.io/v2/network/testnet/evm/124832/etherscan/api?module=account&action=tokenbalance&contractaddress=0x8B71fD76b23721d0D73CA14Ea6464AAD70149B67&address={walletAddress}&tag=latest
+                    </div>
+
+                    <div class="code-block">
+                        <strong>ERC-20 Holdings:</strong><br>
+                        GET https://api.routescan.io/v2/network/testnet/evm/124832/address/{walletAddress}/erc20-holdings
+                    </div>
+
+                    <div class="code-block">
+                        <strong>Transaction Metrics:</strong><br>
+                        GET https://api.routescan.io/v2/network/testnet/evm/all/address/${walletAddress}/transactions?includedChainIds=124832&count=true&limit=0
+                    </div>
+                </section>
+
+                <section id="limitations" class="docs-section">
+                    <h2><i class="fas fa-exclamation-triangle"></i> Analytical Limitations</h2>
+                    
+                    <h3>Data Constraints</h3>
+                    <ul class="feature-list">
+                        <li>Utilizes historical pricing data from 22-12-2024</li>
+                        <li>Does not account for liquidity pool positions (API limitation)</li>
+                        <li>Test accounts and contract addresses are not filtered</li>
+                    </ul>
+
+                    <h3>Functional Boundaries</h3>
+                    <ul class="feature-list">
+                        <li>Retrieves $MITO and $wMITO balances</li>
+                        <li>Aggregates and reconciles other asset balances using:
+                            <div class="code-block" style="margin-top: 10px; margin-bottom: 10px;">
+                                net_value = [(vanilla + aTest + mi) - variableDebtTest]<sub>per token</sub>
+                            </div>
+                        </li>
+                        <li>Computes valuations based on snapshot date pricing</li>
+                        <li>Summarizes total portfolio value</li>
+                        <li>Retrieves transaction metrics</li>
+                        <li>Calculates allocation estimates using:
+                            <div class="code-block" style="margin-top: 10px;"> 
+                                (allocationPercent ÷ 100 × Total_Supply) × 
+                                [ 0.7 × (Testnet_MITO ÷ Total_MITO_Supply) + 
+                                  0.3 × (Net_Other_Assets ÷ Total_Other_Assets_Supply) ]
+                            </div>
+                        </li>
+                    </ul>
+                </section>
+
+                <section id="disclaimer" class="docs-section">
+                    <div class="disclaimer">
+                        <h3><i class="fas fa-exclamation-circle"></i> Important Notice</h3>
+                        <p>This is an independent, community-developed analytical tool with no affiliation to or endorsement from the official Mitosis development team.</p>
+                        
+                        <ul class="disclaimer-list">
+                            <li><i class="fas fa-chart-line"></i> All computations represent estimates derived from publicly accessible on-chain data</li>
+                            <li><i class="fas fa-check-double"></i> Users should validate all results through official communication channels</li>
+                            <li><i class="fas fa-hand-holding-usd"></i> This tool does not constitute financial advice under any circumstances</li>
+                        </ul>
+                        
+                        <p class="disclaimer-note">
+                            <i class="fas fa-shield-alt"></i> Always conduct independent research before making investment decisions.
+                        </p>
+                    </div>
+                    
+                    <div class="credits">
+                        <h3>Development Credits</h3>
+                        <p>Created by <a href="https://twitter.com/svajpayee15" target="_blank">@svajpayee15</a></p>
+                        <p>With technical contributions from <a href="https://twitter.com/SachaDePokecop" target="_blank">@0xSacha</a> and miYurri</p>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        // Mobile navigation toggle
+        const mobileToggle = document.getElementById('mobileToggle');
+        const docsNav = document.getElementById('docsNav');
+        
+        mobileToggle.addEventListener('click', function() {
+            docsNav.classList.toggle('active');
+            const icon = this.querySelector('i');
+            if (docsNav.classList.contains('active')) {
+                icon.classList.remove('fa-bars');
+                icon.classList.add('fa-times');
+                this.innerHTML = '<i class="fas fa-times"></i> Close Documentation Menu';
+            } else {
+                icon.classList.remove('fa-times');
+                icon.classList.add('fa-bars');
+                this.innerHTML = '<i class="fas fa-bars"></i> Documentation Menu';
+            }
+        });
+        
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // Close mobile nav if open
+                if (docsNav.classList.contains('active')) {
+                    docsNav.classList.remove('active');
+                    mobileToggle.querySelector('i').classList.remove('fa-times');
+                    mobileToggle.querySelector('i').classList.add('fa-bars');
+                    mobileToggle.innerHTML = '<i class="fas fa-bars"></i> Documentation Menu';
+                }
+                
+                // Update active nav item
+                document.querySelectorAll('.docs-nav a').forEach(item => {
+                    item.classList.remove('active');
+                });
+                this.classList.add('active');
+                
+                // Scroll to section
+                const targetId = this.getAttribute('href');
+                const targetElement = document.querySelector(targetId);
+                
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 100,
+                        behavior: 'smooth'
+                    });
+                    
+                    // Highlight section
+                    targetElement.classList.add('highlight');
+                    setTimeout(() => {
+                        targetElement.classList.remove('highlight');
+                    }, 2000);
+                }
+            });
+        });
+
+        // Update active nav item based on scroll position
+        window.addEventListener('scroll', function() {
+            const sections = document.querySelectorAll('.docs-section');
+            const navItems = document.querySelectorAll('.docs-nav a');
+            
+            let currentSection = '';
+            const scrollPosition = window.scrollY + 150;
+            
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.offsetHeight;
+                
+                if (scrollPosition >= sectionTop && scrollPosition < sectionTop + sectionHeight) {
+                    currentSection = '#' + section.getAttribute('id');
+                }
+            });
+            
+            navItems.forEach(item => {
+                item.classList.remove('active');
+                if (item.getAttribute('href') === currentSection) {
+                    item.classList.add('active');
+                }
+            });
+        });
+        
+        // Close nav when clicking outside on mobile
+        document.addEventListener('click', function(event) {
+            const isClickInsideNav = docsNav.contains(event.target);
+            const isClickOnToggle = mobileToggle.contains(event.target);
+            
+            if (!isClickInsideNav && !isClickOnToggle && docsNav.classList.contains('active')) {
+                docsNav.classList.remove('active');
+                mobileToggle.querySelector('i').classList.remove('fa-times');
+                mobileToggle.querySelector('i').classList.add('fa-bars');
+                mobileToggle.innerHTML = '<i class="fas fa-bars"></i> Documentation Menu';
+            }
+        });
+    </script>
+</body>
+</html>
