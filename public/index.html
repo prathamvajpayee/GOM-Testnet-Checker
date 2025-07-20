@@ -354,7 +354,7 @@
 
         .formula {
             background: rgba(30, 41, 59, 0.7);
-            padding: 18px;
+            padding: 18px 0px;
             border-radius: 15px;
             margin: 25px 0;
             font-family: monospace;
@@ -470,8 +470,8 @@
 <body>
     <div class="container">
         <header>
-            <h1><i class="fas fa-wallet"></i> GOM Wallet Eligibility Checker</h1>
-            <p class="subtitle">Verify your eligibility for the MITO airdrop and calculate your allocation</p>
+            <h1><i class="fas fa-wallet"></i>Mitosis GOM Wallet Stats Checker</h1>
+            <p class="subtitle">Calculate your Onchain testnet activity on Mitosis GOM testnet <small>(Not official)</small></p>
         </header>
 
         <div class="content">
@@ -486,29 +486,29 @@
                     <label for="allocation-input"><i class="fas fa-percentage"></i> Testnet Allocation
                         Percentage</label>
                     <input type="number" id="allocation-input" name="allocation-input"
-                        placeholder="Enter allocation percentage (e.g., 5)" min="0" max="100">
+                        placeholder="Enter allocation percentage (e.g., 5)" min="0" max="100" value="3.5">
                 </div>
 
-                <div class="checkbox-group">
-                    <input type="checkbox" id="sybil-check" name="sybil-check">
-                    <label for="sybil-check">Sybil Check (Confirm this is not a duplicate wallet)</label>
+                <div class="checkbox-group" style="display: none;">
+                    <input type="checkbox" id="sybil-check" name="sybil-check" checked>
+                    <label for="sybil-check">Sybil Check</label>
                 </div>
 
                 <button class="check-button" id="check-button" disabled>
-                    <i class="fas fa-search"></i> Check Eligibility
+                    <i class="fas fa-search"></i> Check Testnet Stats
                 </button>
                 
                 <div class="status-message" id="status-message"></div>
             </div>
 
             <div class="formula">
-                Allocation = 70% × (Testnet MITO / 31,000,000) + 30% × (Other Assets / 1,940,000,000)
+                Allocation = 70% × (Testnet MITO / 31,000,000) + 30% × (Other Assets / 2,190,000,000)
             </div>
 
             <div class="screenshot-container">
                 <div class="screenshot-card" id="screenshot-card">
                     <div class="screenshot-header">
-                        <h2>GOM Wallet Eligibility Results</h2>
+                        <h2>GOM Wallet Analysis Results</h2>
                         <p>Generated on <span id="screenshot-date"></span></p>
                     </div>
 
@@ -531,19 +531,19 @@
                         </div>
 
                         <div class="screenshot-item">
-                            <h3>Sybil Check</h3>
-                            <div class="value" id="ss-sybil">Verified</div>
+                            <h3>Number Of Transactions</h3>
+                            <div class="value" id="ss-sybil">0</div>
                         </div>
                     </div>
 
                     <div class="screenshot-status">
                         <h3>MITO Airdrop Allocation</h3>
                         <div class="value" id="ss-mito-allocation">0.00 MITO</div>
+                        <small>Speculation based</small>
                     </div>
 
                     <div class="screenshot-footer">
                         <div>Made by <strong>@svajpayee15</strong></div>
-                        <div>Thanks to <strong>@0xsacha</strong></div>
                     </div>
                 </div>
 
@@ -561,22 +561,25 @@
                     Results are not guaranteed and may be subject to change.</p>
 
                 <ul>
-                    <li>Eligibility is determined by the project's criteria and may be adjusted.</li>
                     <li>Testnet $MITO Allocation = testnet $MITO + testnet $wMITO.</li>
+                    <li>Eligibility is determined by the project's criteria and may be adjusted.</li>
                     <li>This tool does not constitute financial advice.</li>
-                    <li>Always verify information through official project channels.</li>
-                    <li>The value of other assets are determined by the real time prices. (Will be fixed as soon as possible)</li>
+                    <li>Value of other Assets assets are calculated based on the prices of 22/12/2024 ( Snapshot Date )</li>
+                    <li>Assets in Liquidity Pools aren't counted as there is no such endpoint provided by Routescan at the time. Still working on that. For more info:</li>
+                    <li>Other Assets Holdings with contracts and test accounts are not deducted</li>
                 </ul>
 
-                <p>Made by <strong>@svajpayee15</strong> | Special thanks to <strong>@0xsacha</strong> for assistance
+                <p>Made by <strong><a href="https://x.com/svajpayee15">@svajpayee15</a></strong> | Special thanks to <strong><a href="https://x.com/SachaDePokecop">0xSacha</a></strong> and <strong>miYurri</strong> for assistance
                 </p>
             </div>
         </div>
 
         <div class="footer">
             <div class="credits">
-                <p>GOM Wallet Eligibility Checker v2.0 | Made by <strong>@svajpayee15</strong> | Thanks to
-                    <strong>@0xsacha</strong></p>
+                <p>Game Of Mito Checker v1</p>
+                <p>Made by <strong>@svajpayee15</strong> | Thanks to
+                    <strong>@0xsacha</strong>
+                    and <strong>miYurri</strong></p>
             </div>
             <button class="share-button" id="docs-button">
                 <i class="fas fa-book"></i> Check Documentation
@@ -586,263 +589,326 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // DOM Elements
-            const walletInput = document.getElementById('wallet-address');
-            const allocationInput = document.getElementById('allocation-input');
-            const sybilCheck = document.getElementById('sybil-check');
-            const checkButton = document.getElementById('check-button');
-            const screenshotCard = document.getElementById('screenshot-card');
-            const oneClickShare = document.getElementById('one-click-share');
-            const docsButton = document.getElementById('docs-button');
-            const statusMessage = document.getElementById('status-message');
-            
-            // State variables
-            let testnetAllocation = { majorAllocation: 0, minorAllocation: 0, otherAssets: []};
-            let currentAllocation = 0;
-            let allocationPercent = 0;
+    // DOM Elements
+    const walletInput = document.getElementById('wallet-address');
+    const allocationInput = document.getElementById('allocation-input');
+    const sybilCheck = document.getElementById('sybil-check');
+    const checkButton = document.getElementById('check-button');
+    const screenshotCard = document.getElementById('screenshot-card');
+    const oneClickShare = document.getElementById('one-click-share');
+    const docsButton = document.getElementById('docs-button');
+    const statusMessage = document.getElementById('status-message');
+    const allOtherAssets = {
+        ETH: 101084.60566746905,
+        USDT: 727878372.154502,
+        PENDLE: 3924304.2968556276,
+        AAVE: 740998.1565156179,
+        COMP: 318781.38916405005,
+        YFI: 2078.3250731917424,
+        LBTC: 4872.913210299999,
+        USDe: 267517600.21121743,
+        OP: 5323195.564443136,
+        ARB: 15340147.510940885,
+        STG: 45246314.23993027,
+        MNT: 411655.26253061986,
+        weETH: 13363.555082480147,
+        USDE: 2869912.276269067,
+        mETH: 2214.888935789168,
+        ezETH: 1367.8402970105844,
+    };
 
-            // Set current date
-            const now = new Date();
-            document.getElementById('screenshot-date').textContent = 
-                `${now.toLocaleDateString()} ${now.toLocaleTimeString()}`;
+    // Token prices
+    const tokenPrices = {
+        eth: 3337,
+        usdt: 1,
+        pendle: 5.05,
+        aave: 298.04,
+        comp: 80.62,
+        yfi: 8539.27,
+        lbtc: 97227.27,
+        usde: 1,
+        op: 1.74,
+        arb: 0.744313,
+        stg: 0.292645,
+        mnt: 1.16,
+        weeth: 3519.41,
+        meth: 3513.04,
+        ezeth: 3428.54
+    };
 
-            // Update button state based on inputs
-            function updateButtonState() {
-                const walletFilled = walletInput.value.trim() !== '';
-                const allocationFilled = allocationInput.value.trim() !== '';
-                checkButton.disabled = !(walletFilled && allocationFilled && sybilCheck.checked);
-            }
+    // Precompute ecosystem total once
+    const ecosystemOtherAssetsTotalUSD = Object.entries(allOtherAssets).reduce((sum, [asset, amount]) => {
+        const price = tokenPrices[asset.toLowerCase()] || 0;
+        return sum + (amount * price);
+    }, 0);
 
-            // Event listeners
-            walletInput.addEventListener('input', updateButtonState);
-            allocationInput.addEventListener('input', updateButtonState);
-            sybilCheck.addEventListener('change', updateButtonState);
-            
-            // Show status message
-            function showStatus(message, isError = false) {
-                statusMessage.textContent = message;
-                statusMessage.className = isError ? 'status-message status-error' : 'status-message status-success';
-                statusMessage.style.display = 'block';
-                
-                // Hide after 5 seconds
-                setTimeout(() => {
-                    statusMessage.style.display = 'none';
-                }, 5000);
-            }
+    // State variables
+    let testnetAllocation = { majorAllocation: 0, minorAllocation: 0, otherAssets: [] };
+    let currentAllocation = 0;
+    let allocationPercent = 0;
 
-            // Main check function
-            checkButton.addEventListener('click', async function() {
-                const walletAddress = walletInput.value.trim();
-                allocationPercent = parseFloat(allocationInput.value.trim());
+    // Set current date
+    const now = new Date();
+    document.getElementById('screenshot-date').textContent = 
+        `${now.toLocaleDateString()} ${now.toLocaleTimeString()}`;
 
-                if (!walletAddress || isNaN(allocationPercent)) {
-                    showStatus("Please fill in all required fields", true);
-                    return;
-                }
+    // Update button state based on inputs
+    function updateButtonState() {
+        const walletFilled = walletInput.value.trim() !== '';
+        const allocationFilled = allocationInput.value.trim() !== '';
+        checkButton.disabled = !(walletFilled && allocationFilled && sybilCheck.checked);
 
-                // Show loading state
-                checkButton.disabled = true;
-                checkButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking...';
-                showStatus("Fetching wallet data...");
-
-                try {
-                    // Fetch wallet data
-                    await fetchMitoBalance(walletAddress);
-                    await fetchOtherAssetsBalance(`https://api.routescan.io/v2/network/testnet/evm/124832/address/${walletAddress}/erc20-holdings`);
-
-                    // Show the screenshot card
-                    screenshotCard.style.display = 'block';
-
-                    // Update screenshot card
-                    document.getElementById('ss-testnet-mito').textContent = `${testnetAllocation.majorAllocation} $MITO`;
-                    document.getElementById('ss-other-assets').textContent = `$${testnetAllocation.minorAllocation}`;
-                    document.getElementById('ss-allocation-percent').textContent = `${allocationPercent}%`;
-
-                    // Update Sybil status
-                    document.getElementById('ss-sybil').textContent = sybilCheck.checked ? 'Verified' : 'Not Verified';
-                    document.getElementById('ss-sybil').style.color = sybilCheck.checked ? '#38b2ac' : '#e01b24';
-
-                    // Calculate allocation
-                    const totalTestnetMito = 31000000;
-                    const totalOtherAssets = 1940000000;
-
-                    const mitoPart = 0.7 * (testnetAllocation.majorAllocation / totalTestnetMito) * (allocationPercent / 100 * 1000000000);
-                    const otherPart = 0.3 * (testnetAllocation.minorAllocation / totalOtherAssets) * (allocationPercent / 100 * 1000000000);
-
-                    currentAllocation = mitoPart + otherPart;
-
-                    document.getElementById('ss-mito-allocation').textContent = `${currentAllocation.toFixed(2)} MITO`;
-                    
-                    showStatus("Wallet data fetched successfully!");
-                } catch (error) {
-                    console.error('Error during wallet check:', error);
-                    showStatus("Error fetching wallet data. Please try again.", true);
-                } finally {
-                    // Reset button
-                    checkButton.innerHTML = '<i class="fas fa-search"></i> Check Eligibility';
-                    checkButton.disabled = false;
-                }
-            });
-
-            // One-click share on X
-            oneClickShare.addEventListener('click', function() {
-                if (!screenshotCard.style.display || screenshotCard.style.display === 'none') {
-                    showStatus("Please check eligibility first before sharing", true);
-                    return;
-                }
-
-                // Show loading state
-                oneClickShare.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Preparing...';
-                oneClickShare.disabled = true;
-
-                // Use html2canvas to create screenshot
-                html2canvas(screenshotCard).then(canvas => {
-                    // Convert canvas to data URL
-                    const dataURL = canvas.toDataURL('image/png');
-
-                    // Create a temporary link to download the image
-                    const link = document.createElement('a');
-                    link.download = 'gom-eligibility-results.png';
-                    link.href = dataURL;
-                    link.click();
-
-                    // Prepare text for Twitter
-                    const tweetText = `Just checked my GOM Wallet eligibility! ✅
-
-Testnet MITO: ${testnetAllocation.majorAllocation}
-Other Assets: $${testnetAllocation.minorAllocation}
-Testnet Allocation: ${allocationPercent}%
-MITO Allocation: ${currentAllocation.toFixed(2)} MITO
-
-Check yours now! Made by @svajpayee15 with help from @0xsacha #GOM #Airdrop`;
-
-                    // Open Twitter with the text
-                    const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}`;
-                    window.open(twitterUrl, '_blank');
-
-                    // Reset button
-                    oneClickShare.innerHTML = '<i class="fab fa-twitter"></i> Share Results on X';
-                    oneClickShare.disabled = false;
-                });
-            });
-
-            // Documentation button
-            docsButton.addEventListener('click', function() {
-                alert("Redirecting to official documentation...");
-                // In a real implementation, this would open the documentation URL
-                // window.open("https://docs.gomproject.io", "_blank");
-            });
-
-            // API Functions
-            async function fetchMitoBalance(walletAddress) {
-                try {
-                    const rawMitoBalance = await fetch(`https://api.routescan.io/v2/network/testnet/evm/124832/etherscan/api?module=account&action=balance&address=${walletAddress}&tag=latest&apikey=YourApiKeyToken`);
-                    const mitoBalance = await rawMitoBalance.json();
-
-                    const rawWrappedMitoBalance = await fetch(`https://api.routescan.io/v2/network/testnet/evm/124832/etherscan/api?module=account&action=tokenbalance&contractaddress=0x8B71fD76b23721d0D73CA14Ea6464AAD70149B67&address=${walletAddress}&tag=latest&apikey=YourApiKeyToken`);
-                    const wrappedMitoBalance = await rawWrappedMitoBalance.json();
-
-                    if (mitoBalance.status === '1' && wrappedMitoBalance.status === '1') {
-                        const balanceInWei = BigInt(mitoBalance.result) + BigInt(wrappedMitoBalance.result);
-                        const balanceInMito = Number(balanceInWei) / 1e18;
-                        testnetAllocation.majorAllocation = balanceInMito.toFixed(2);
-                    } else {
-                        console.error('Failed to fetch balance:', mitoBalance.message || wrappedMitoBalance.message);
-                        throw new Error('Failed to fetch MITO balance');
-                    }
-                } catch (error) {
-                    console.error('Error fetching MITO balance:', error);
-                    throw error;
-                }
-            }
-
-            async function fetchOtherAssetsBalance(url) {
-                try {
-                    const rawOtherAssetsBalance = await fetch(url);
-                    const otherAssetsBalanceArray = await rawOtherAssetsBalance.json();
-
-                    if (otherAssetsBalanceArray.link.next) {
-                        testnetAllocation.otherAssets = [...testnetAllocation.otherAssets,...otherAssetsBalanceArray.items]
-                        await fetchOtherAssetsBalance(`https://api.routescan.io${otherAssetsBalanceArray.link.next}`);
-                    } 
-                    else if(otherAssetsBalanceArray.items){
-                        testnetAllocation.otherAssets = [...testnetAllocation.otherAssets,...otherAssetsBalanceArray.items]
-                        await fetchPriceOtherAssetsBalance(testnetAllocation.otherAssets);
-                    }
-                    else {
-                        console.error('Failed to fetch balance:', otherAssetsBalanceArray.message);
-                        throw new Error('Failed to fetch other assets balance');
-                    }
-                } catch (error) {
-                    console.error('Error fetching other assets:', error);
-                    throw error;
-                }
-            }
-
-         async function fetchPriceOtherAssetsBalance(otherAssetsBalanceArray) {
-  try {
-    let balanceMap = {};
-    const patterns = ["variableDebtTest", "aTest", "mi"];
-
-    otherAssetsBalanceArray.forEach(token => {
-      let symbol = token.tokenSymbol;
-      let category = 'vanilla';
-
-
-      for (let prefix of patterns) {
-       if (symbol.startsWith(prefix) ) {
-          symbol = symbol.slice(prefix.length);
-          if(symbol.startsWith("mi")){
-            symbol = symbol.slice(2);
-          }
-          if (prefix === "variableDebtTest") category = "variableDebtTest";
-          else if (prefix === "aTest") category = "aTest";
-          break;
+        // Improved wallet address validation
+        if (walletInput.value.trim().length !== 42 || !walletInput.value.trim().startsWith("0x")) {
+            checkButton.disabled = true;
+            showStatus("Invalid Ethereum address - must be 42 characters starting with 0x", true);
+            return;
+        } else if (!/^0x[a-fA-F0-9]{40}$/.test(walletInput.value.trim())) {
+            checkButton.disabled = true;
+            showStatus("Invalid characters - wallet address can only contain 0-9 and a-f", true);
+            return;
         }
-      }
 
-      if (!balanceMap[symbol]) {
-        balanceMap[symbol] = { vanilla: 0, aTest: 0, variableDebtTest: 0 };
-      }
-
-      const amount = Number(BigInt(token.tokenQuantity)) / 1e18;
-      balanceMap[symbol][category] += amount;
-    });
-
-    console.log("Breakdown after prefix logic:", balanceMap);
-
-    const symbols = Object.keys(balanceMap).join(',');
-    console.log("Fetching prices for:", symbols);
-    const resp = await fetch(`https://gom-testnet-checker.vercel.app/fetchOtherAssetsBalanceInUsd?symbols=${symbols}`);
-    const priceData = await resp.json();
-    console.log("Price data:", priceData);
-
-    // Calculate net and USD total
-    let otherAssetsBalanceInUsd = 0;
-
-    for (let sym of Object.keys(balanceMap)) {
-      const { vanilla, aTest, variableDebtTest } = balanceMap[sym];
-      let net = vanilla + aTest - variableDebtTest;
-
-      const price = priceData[sym.toLowerCase()] || 0;
-      const usd = net * price;
-      console.log(`— ${sym}: vanilla=${vanilla}, aTest=${aTest}, debt=${variableDebtTest}, net=${net}, price=${price} -> USD=${usd.toFixed(2)}`);
-
-      otherAssetsBalanceInUsd += usd;
+        if (allocationInput.value <= 0 || allocationInput.value > 100) {
+            checkButton.disabled = true;
+            showStatus("Invalid input: Allocation percentage must be between 0 and 100", true);
+        } else {
+            checkButton.disabled = false;
+            showStatus("none");
+        }
     }
 
-    console.log("Total other assets (USD):", otherAssetsBalanceInUsd.toFixed(2));
-    testnetAllocation.minorAllocation = otherAssetsBalanceInUsd.toFixed(2);
-  }
-  catch (err) {
-    console.error("Error in fetchPriceOtherAssetsBalance:", err);
-    throw err;
-  }
-}
+    // Event listeners
+    walletInput.addEventListener('input', updateButtonState);
+    allocationInput.addEventListener('input', updateButtonState);
+    sybilCheck.addEventListener('change', updateButtonState);
+    
+    // Show status message
+    function showStatus(message, isError = false) {
+        statusMessage.textContent = message;
+        statusMessage.className = isError ? 'status-message status-error' : 'status-message status-success';
+        statusMessage.style.display = 'block';
 
+        if (message == "none") { statusMessage.style.display = 'none'; }
+        
+        // Hide after 5 seconds
+        setTimeout(() => {
+            statusMessage.style.display = 'none';
+        }, 5000);
+    }
 
+    // Main check function
+    checkButton.addEventListener('click', async function() {
+        const walletAddress = walletInput.value.trim();
+        allocationPercent = parseFloat(allocationInput.value.trim());
 
+        // Reset state for each check
+        testnetAllocation = { majorAllocation: 0, minorAllocation: 0, otherAssets: [] };
+
+        if (!walletAddress || isNaN(allocationPercent)) {
+            showStatus("Please fill in all required fields", true);
+            return;
+        }
+
+        // Show loading state
+        checkButton.disabled = true;
+        checkButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking...';
+        showStatus("Fetching wallet data...");
+
+        try {
+            // Fetch wallet data
+            await fetchMitoBalance(walletAddress);
+            await fetchOtherAssetsBalance(`https://api.routescan.io/v2/network/testnet/evm/124832/address/${walletAddress}/erc20-holdings`);
+
+            // Show the screenshot card
+            screenshotCard.style.display = 'block';
+
+            // Update screenshot card
+            document.getElementById('ss-testnet-mito').textContent = `${testnetAllocation.majorAllocation} $MITO`;
+            document.getElementById('ss-other-assets').textContent = `$${testnetAllocation.minorAllocation}`;
+            document.getElementById('ss-allocation-percent').textContent = `${allocationPercent}%`;
+
+            // Update Sybil status
+            document.getElementById('ss-sybil').textContent = await fetchTotalTransactions(walletAddress)
+
+            // Calculate allocation
+            const totalTestnetMito = 31000000;
+            const mitoPart = 0.7 * (testnetAllocation.majorAllocation / totalTestnetMito) * (allocationPercent / 100 * 1000000000);
+            const otherPart = 0.3 * (testnetAllocation.minorAllocation / ecosystemOtherAssetsTotalUSD) * (allocationPercent / 100 * 1000000000);
+
+            currentAllocation = mitoPart + otherPart;
+
+            document.getElementById('ss-mito-allocation').textContent = `${currentAllocation.toFixed(2)} MITO`;
+            
+            showStatus("Wallet data fetched successfully!");
+        } catch (error) {
+            console.error('Error during wallet check:', error);
+            showStatus("Error fetching wallet data. Please try again.", true);
+        } finally {
+            // Reset button
+            checkButton.innerHTML = '<i class="fas fa-search"></i> Check Eligibility';
+            checkButton.disabled = false;
+        }
+    });
+
+    // One-click share on X
+    oneClickShare.addEventListener('click', function() {
+        if (!screenshotCard.style.display || screenshotCard.style.display === 'none') {
+            showStatus("Please check eligibility first before sharing", true);
+            return;
+        }
+
+        // Show loading state
+        oneClickShare.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Preparing...';
+        oneClickShare.disabled = true;
+
+        // Use html2canvas to create screenshot
+        html2canvas(screenshotCard).then(canvas => {
+            // Convert canvas to data URL
+            const dataURL = canvas.toDataURL('image/png');
+
+            // Create a temporary link to download the image
+            const link = document.createElement('a');
+            link.download = 'gom-analysis-results.png';
+            link.href = dataURL;
+            link.click();
+
+            // Prepare text for Twitter
+            const tweetText = `🚨 Just checked my @MitosisOrg GOM stats!
+
+📊 Results:
+🔹 Testnet MITO: ${testnetAllocation.majorAllocation}
+🔹 Other Assets: $${testnetAllocation.minorAllocation}
+🔹 Testnet Allocation: ${allocationPercent}%
+🔹 MITO Allocation: ${currentAllocation.toFixed(2)} MITO
+
+Check yours now! 👇
+https://gom-testnet-checker.vercel.app
+
+👨💻 Made by @svajpayee15 
+🙏 With help from miYurri & @0xsacha 
+`;
+
+            // Open Twitter with the text
+            const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}`;
+            window.open(twitterUrl, '_blank');
+
+            // Reset button
+            oneClickShare.innerHTML = '<i class="fab fa-twitter"></i> Share Results on X';
+            oneClickShare.disabled = false;
         });
+    });
+
+    // Documentation button
+    docsButton.addEventListener('click', function() {
+        //  document.body.style.opacity = '0.8';
+        setTimeout(() => {
+            window.location.href = "/documents";
+        }, 300);
+    });
+
+    // API Functions
+    async function fetchMitoBalance(walletAddress) {
+        try {
+            const rawMitoBalance = await fetch(`https://api.routescan.io/v2/network/testnet/evm/124832/etherscan/api?module=account&action=balance&address=${walletAddress}&tag=latest&apikey=YourApiKeyToken`);
+            const mitoBalance = await rawMitoBalance.json();
+
+            const rawWrappedMitoBalance = await fetch(`https://api.routescan.io/v2/network/testnet/evm/124832/etherscan/api?module=account&action=tokenbalance&contractaddress=0x8B71fD76b23721d0D73CA14Ea6464AAD70149B67&address=${walletAddress}&tag=latest&apikey=YourApiKeyToken`);
+            const wrappedMitoBalance = await rawWrappedMitoBalance.json();
+
+            if (mitoBalance.status === '1' && wrappedMitoBalance.status === '1') {
+                const balanceInWei = BigInt(mitoBalance.result) + BigInt(wrappedMitoBalance.result);
+                const balanceInMito = Number(balanceInWei) / 1e18;
+                testnetAllocation.majorAllocation = balanceInMito.toFixed(2);
+            } else {
+                console.error('Failed to fetch balance:', mitoBalance.message || wrappedMitoBalance.message);
+                throw new Error('Failed to fetch MITO balance');
+            }
+        } catch (error) {
+            console.error('Error fetching MITO balance:', error);
+            throw error;
+        }
+    }
+
+    async function fetchOtherAssetsBalance(url) {
+        try {
+            const rawOtherAssetsBalance = await fetch(url);
+            const otherAssetsBalanceArray = await rawOtherAssetsBalance.json();
+
+            if (otherAssetsBalanceArray.link?.next) {
+                testnetAllocation.otherAssets = [...testnetAllocation.otherAssets, ...otherAssetsBalanceArray.items];
+                await fetchOtherAssetsBalance(`https://api.routescan.io${otherAssetsBalanceArray.link.next}`);
+            } 
+            else if (otherAssetsBalanceArray.items) {
+                testnetAllocation.otherAssets = [...testnetAllocation.otherAssets, ...otherAssetsBalanceArray.items];
+                await fetchPriceOtherAssetsBalance(testnetAllocation.otherAssets);
+            }
+            else {
+                console.error('Failed to fetch balance:', otherAssetsBalanceArray.message);
+                throw new Error('Failed to fetch other assets balance');
+            }
+        } catch (error) {
+            console.error('Error fetching other assets:', error);
+            throw error;
+        }
+    }
+
+    async function fetchPriceOtherAssetsBalance(otherAssetsBalanceArray) {
+        const balanceMap = {};
+        try {
+            const patterns = ["variableDebtTest", "aTest", "mi"];
+
+            otherAssetsBalanceArray.forEach(token => {
+                let symbol = token.tokenSymbol;
+                let category = 'vanilla';
+
+                for (let prefix of patterns) {
+                    if (symbol.startsWith(prefix)) {
+                        symbol = symbol.slice(prefix.length);
+                        if (symbol.startsWith("mi")) {
+                            symbol = symbol.slice(2);
+                        }
+                        if (prefix === "variableDebtTest") category = "variableDebtTest";
+                        else if (prefix === "aTest") category = "aTest";
+                        break;
+                    }
+                }
+
+                if (!balanceMap[symbol]) {
+                    balanceMap[symbol] = { vanilla: 0, aTest: 0, variableDebtTest: 0 };
+                }
+
+                const amount = Number(BigInt(token.tokenQuantity)) / 1e18;
+                balanceMap[symbol][category] += amount;
+            });
+
+            // Calculate user's total balance in USD
+            let otherAssetsBalanceInUsd = 0;
+
+            for (let sym of Object.keys(balanceMap)) {
+                const { vanilla, aTest, variableDebtTest } = balanceMap[sym];
+                let net = vanilla + aTest - variableDebtTest;
+
+                const price = tokenPrices[sym.toLowerCase()] || 0;
+                const usd = net * price;
+                otherAssetsBalanceInUsd += usd;
+            }
+
+            testnetAllocation.minorAllocation = otherAssetsBalanceInUsd.toFixed(2);
+        }
+        catch (err) {
+            console.error("Error in fetchPriceOtherAssetsBalance:", err);
+            throw err;
+        }
+    }
+
+    async function fetchTotalTransactions(walletAddress) {
+        const response = await fetch(`https://api.routescan.io/v2/network/testnet/evm/all/address/${walletAddress}/transactions?includedChainIds=124832&count=true&limit=0`)
+        const { count } = await response.json()
+    
+        return count
+    }
+});
     </script>
 </body>
 </html>
