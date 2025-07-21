@@ -878,7 +878,7 @@ With help from @SokolJura & @SachaDePokecop
                     balanceMap[symbol] = { vanilla: 0, aTest: 0, variableDebtTest: 0 };
                 }
 
-                const amount = Number(BigInt(token.tokenQuantity)) / 1e18;
+                const amount = Number(BigInt(token.tokenQuantity)) / Number(`1e${token.tokenDecimals}`);
                 balanceMap[symbol][category] += amount;
             });
 
